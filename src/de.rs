@@ -90,7 +90,15 @@ impl<'a, 'py, 'de> de::Deserializer<'de> for &'a mut Depythonizer<'py> {
         } else if obj.is_instance_of::<PyBool>() {
             self.deserialize_bool(visitor)
         } else if obj.is_instance_of::<PyInt>() {
-            self.deserialize_i64(visitor)
+            if obj.extract::<u64>().is_ok() {
+                self.deserialize_u64(visitor)
+            }
+            else if obj.extract::<i64>().is_ok(){
+                self.deserialize_i64(visitor)
+            }
+            else{
+                panic!("Couldn't deserialize obj");
+            }
         } else if obj.is_instance_of::<PyList>() || obj.is_instance_of::<PyTuple>() {
             self.deserialize_tuple(obj.len()?, visitor)
         } else if obj.is_instance_of::<PyDict>() {
